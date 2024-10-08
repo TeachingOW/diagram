@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ERD: Course, Student, Register</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        .entity {
+            fill: lightblue;
+            stroke: #000;
+            stroke-width: 2px;
+        }
+        .attribute {
+            fill: lightgreen;
+            stroke: #000;
+            stroke-width: 2px;
+        }
+        .relationship {
+            fill: lightcoral;
+            stroke: #000;
+            stroke-width: 2px;
+        }
+        .link {
+            stroke: #999;
+            stroke-opacity: 0.6;
+            stroke-width: 2px;
+        }
+        text {
+            font-size: 12px;
+            font-family: Arial, sans-serif;
+            font-weight: bold; /* Make text bold */
+            text-anchor: middle; /* Center the text horizontally */
+        }
+        .key {
+            text-decoration: underline; /* Underline for key attributes */
+        }
+    </style>
+</head>
+<body>
+    <svg width="800" height="600"></svg>
+
+    <script>
+        const svg = d3.select("svg"),
+              width = +svg.attr("width"),
+              height = +svg.attr("height");
+
+        // Data representing nodes (entities, attributes, relationships) and links
+        const graph = {
+            nodes: [
+                { id: "Student", type: "entity" },
+                { id: "Course", type: "entity" },
+                { id: "Register", type: "relationship" },
+                { id: "student_id", type: "attribute", isKey: true },
+                { id: "name", type: "attribute" },
+                { id: "email", type: "attribute" },
+                { id: "course_id", type: "attribute", isKey: true },
+                { id: "course_name", type: "attribute" },
+                { id: "credits", type: "attribute" },
+                { id: "register_id", type: "attribute", isKey: true },
+                { id: "date_registered", type: "attribute" }
+            ],
+            links: [
+                { source: "Student", target: "Register", value: 1 },
+                { source: "Course", target: "Register", value: 1 },
+                { source: "student_id", target: "Student", value: 1 },
+                { source: "name", target: "Student", value: 1 },
+                { source: "email", target: "Student", value: 1 },
+                { source: "course_id", target: "Course", value: 1 },
+                { source: "course_name", target: "Course", value: 1 },
+                { source: "credits", target: "Course", value: 1 },
+                { source: "register_id", target: "Register", value: 1 },
+                { source: "date_registered", target: "Register", value: 1 }
+            ]
+        };
+
+        // Define the links (relationships)
+        const link = svg.append("g")
+            .attr("class", "links")
+            .selectAll("line")
+            .data(graph.links)
+            .enter().append("line")
+            .attr("class", "link");
+
+        // Define the nodes (entities, attributes, relationships)
+        const node = svg.append("g")
+            .attr("class", "nodes")
+            .selectAll("g")
+            .data(graph.nodes)
+            .enter().append("g")
+            .call(d3.drag() // Enable drag behavior
+                .on("start", dragstarted)
+                .on("drag", dragged)
+                .on("end", dragended));
+
+        // Create the shapes for each node based on their type
+        node.append("path")
+            .attr("d", d => {
+                if (d.type === "entity") {
+                    return "M -40 -20 H 40 V 20 H -40 Z"; // Rectangle for entity
+                } else if (d.type === "attribute") {
+                    return "M 0 -20 A 20 20 0 1 1 0 20 A 20 20 0 1 1 0 -20"; // Oval for attribute
+                } else {
+                    return "M -20 0 L 0 -20 L 20 0 L 0 20 Z"; // Diamond for relationship
+                }
+            })
+            .attr("class", d => d.type);
+
+        // Add text labels to each node
+        node.append("text")
+            .attr("dy", d => {
+                if (d.type === "entity") {
+                    return 5; // Center text for entities (rectangles)
+                } else if (d.type === "attribute") {
+                    return 5; // Center text for attributes (ovals)
+                } else {
+                    return 5; // Center text for relationships (diamonds)
+                }
+            })
+            .attr("class", d => d.isKey ? "key" : "") // Apply 'key' class if it's a key attribute
+            .text(d => d.id);
+
+        // Setup the force simulation for nodes and links
+        const simulation = d3.forceSimulation()
+            .nodes(graph.nodes)
+            // Adjust the forceLink to make attribute links shorter and stronger
+            .force("link", d3.forceLink(graph.links)
+                .id(d => d.id)
+                .distance(d => d.source.type === "attribute" || d.target.type === "attribute" ? 50 : 150) // Shorter for attributes
+                .strength(d => d.source.type === "attribute" || d.target.type === "attribute" ? 1 : 0.5)) // Stronger for attributes
+            .force("charge", d3.forceManyBody().strength(-300))
+            .force("center", d3.forceCenter(width / 2, height / 2));
+
+        // Update node and link positions on each tick of the simulation
+        simulation.on("tick", () => {
+            link
+                .attr("x1", d => d.source.x)
+                .attr("y1", d => d.source.y)
+                .attr("x2", d => d.target.x)
+                .attr("y2", d => d.target.y);
+
+            node.attr("transform", d => `translate(${d.x},${d.y})`);
+        });
+
+        // Drag event handlers
+        function dragstarted(event, d) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+
+        function dragged(event, d) {
+            d.fx = event.x;
+            d.fy = event.y;
+        }
+
+        function dragended(event, d) {
+            if (!event.active) simulation.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+        }
+    </script>
+</body>
+</html>
