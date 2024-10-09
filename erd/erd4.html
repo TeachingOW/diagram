@@ -94,7 +94,7 @@
         svg.append("defs").append("marker")
             .attr("id", "arrow")
             .attr("viewBox", "0 -5 10 10")
-            .attr("refX", 5)  // Adjusted for middle placement
+            .attr("refX", 20)
             .attr("refY", 0)
             .attr("markerWidth", 6)
             .attr("markerHeight", 6)
@@ -116,14 +116,14 @@
             svg.append("defs").append("marker")
                 .attr("id", "arrow")
                 .attr("viewBox", "0 -5 10 10")
-                .attr("refX", 5)  // Adjusted for middle placement
+                .attr("refX", 15)  
                 .attr("refY", 0)
                 .attr("markerWidth", 6)
                 .attr("markerHeight", 6)
                 .attr("orient", "auto")
                 .append("path")
                 .attr("d", "M0,-5L10,0L0,5")
-                .attr("fill", "#999");
+                .attr("fill", "#555");
 
             // Parse new graph data
             const input = document.getElementById("graphData").value;
@@ -140,7 +140,7 @@
                 .attr("marker-start", d => d.arrow && d.direction === "source" ? "url(#arrow)" : null); // Add arrow markers towards source
 
             // Add middle arrows (between source and target)
-            const arrowLink = svg.append("g")
+            /*const arrowLink = svg.append("g")
                 .attr("class", "arrows")
                 .selectAll("path")
                 .data(graph.links.filter(d => d.arrow))
@@ -152,7 +152,7 @@
                     return `M${midX},${midY}L${midX + direction[0]},${midY + direction[1]}`;
                 })
                 .attr("fill", "#999");
-
+*/
             // Define the nodes (entities, attributes, relationships)
             const node = svg.append("g")
                 .attr("class", "nodes")

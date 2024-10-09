@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ERD with Arrows</title>
+    <title>ERD with Middle Arrows</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
         .entity {
@@ -104,6 +104,7 @@
             .attr("fill", "#999");
 
         let graph;
+        let simulation;  // Declare simulation globally
 
         // Initial graph
         updateGraph();
@@ -136,10 +137,11 @@
                 .data(graph.links)
                 .enter().append("line")
                 .attr("class", d => d.total ? "link total" : "link") // Bold line for total participation
-                .attr("marker-end", d => d.arrow ? "url(#arrow)" : null) // Add arrow markers at the end
+                .attr("marker-end", d => d.arrow && d.direction === "target" ? "url(#arrow)" : null) // Add arrow markers towards target
+                .attr("marker-start", d => d.arrow && d.direction === "source" ? "url(#arrow)" : null); // Add arrow markers towards source
 
-            // Add middle arrows
-            const arrowLink = svg.append("g")
+            // Add middle arrows (between source and target)
+            svg.append("g")
                 .attr("class", "arrows")
                 .selectAll("path")
                 .data(graph.links.filter(d => d.arrow))
@@ -147,7 +149,8 @@
                 .attr("d", d => {
                     const midX = (d.source.x + d.target.x) / 2;
                     const midY = (d.source.y + d.target.y) / 2;
-                    return `M${midX},${midY}L${midX + 40},${midY + 5}`;
+                    const direction = d.direction === "target" ? [10, 0] : [-10, 0];
+                    return `M${midX},${midY}L${midX + direction[0]},${midY + direction[1]}`;
                 })
                 .attr("fill", "#999");
 
@@ -182,7 +185,7 @@
                 .text(d => d.id);
 
             // Setup the force simulation for nodes and links
-            const simulation = d3.forceSimulation()
+            simulation = d3.forceSimulation()
                 .nodes(graph.nodes)
                 .force("link", d3.forceLink(graph.links)
                     .id(d => d.id)
@@ -200,6 +203,15 @@
                     .attr("y2", d => d.target.y);
 
                 node.attr("transform", d => `translate(${d.x},${d.y})`);
+
+                // Update middle arrows
+                svg.selectAll(".arrows path")
+                    .attr("d", d => {
+                        const midX = (d.source.x + d.target.x) / 2;
+                        const midY = (d.source.y + d.target.y) / 2;
+                        const direction = d.direction === "target" ? [10, 0] : [-10, 0];
+                        return `M${midX},${midY}L${midX + direction[0]},${midY + direction[1]}`;
+                    });
             });
         }
 
