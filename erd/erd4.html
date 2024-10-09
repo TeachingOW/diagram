@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ERD with Middle Arrows</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        .entity {
+            fill: lightblue;
+            stroke: #000;
+            stroke-width: 2px;
+        }
+        .weak-entity {
+            fill: lightblue;
+            stroke: #000;
+            stroke-width: 4px; /* Bold line for weak entity */
+        }
+        .attribute {
+            fill: lightgreen;
+            stroke: #000;
+            stroke-width: 2px;
+        }
+        .relationship {
+            fill: lightcoral;
+            stroke: #000;
+            stroke-width: 2px;
+        }
+        .link {
+            stroke: #999;
+            stroke-opacity: 0.6;
+            stroke-width: 2px;
+        }
+        .total {
+            stroke-width: 4px; /* Bold line for total participation */
+        }
+        text {
+            font-size: 12px;
+            font-family: Arial, sans-serif;
+            font-weight: bold;
+            text-anchor: middle;
+        }
+        .key {
+            text-decoration: underline;
+            text-decoration-style: dashed; /* Dashed underline */
+        }
+        #editor {
+            margin: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="editor">
+        <textarea id="graphData" rows="10" cols="50">{
+            "nodes": [
+                { "id": "Student", "type": "entity" },
+                { "id": "Course", "type": "entity" },
+                { "id": "Register", "type": "relationship", "total": true },
+                { "id": "student_id", "type": "attribute", "isKey": true },
+                { "id": "name", "type": "attribute" },
+                { "id": "email", "type": "attribute" },
+                { "id": "course_id", "type": "attribute", "isKey": true },
+                { "id": "course_name", "type": "attribute" },
+                { "id": "credits", "type": "attribute" },
+                { "id": "register_id", "type": "attribute", "isKey": true },
+                { "id": "date_registered", "type": "attribute" },
+                { "id": "WeakEntity", "type": "entity", "isWeak": true }
+            ],
+            "links": [
+                { "source": "Student", "target": "Register", "value": 1, "total": true, "arrow": true, "direction": "target" },
+                { "source": "Course", "target": "Register", "value": 1, "arrow": true, "direction": "source" },
+                { "source": "student_id", "target": "Student", "value": 1 },
+                { "source": "name", "target": "Student", "value": 1 },
+                { "source": "email", "target": "Student", "value": 1 },
+                { "source": "course_id", "target": "Course", "value": 1 },
+                { "source": "course_name", "target": "Course", "value": 1 },
+                { "source": "credits", "target": "Course", "value": 1 },
+                { "source": "register_id", "target": "Register", "value": 1 },
+                { "source": "date_registered", "target": "Register", "value": 1 },
+                { "source": "WeakEntity", "target": "Register", "value": 1, "total": true, "arrow": true, "direction": "target" }
+            ]
+        }</textarea>
+        <button onclick="updateGraph()">Update Graph</button>
+    </div>
+
+    <svg width="800" height="600"></svg>
+
+    <script>
+        const svg = d3.select("svg"),
+              width = +svg.attr("width"),
+              height = +svg.attr("height");
+
+        // Define arrow marker for relationships
+        svg.append("defs").append("marker")
+            .attr("id", "arrow")
+            .attr("viewBox", "0 -5 10 10")
+            .attr("refX", 5)  // Adjusted for middle placement
+            .attr("refY", 0)
+            .attr("markerWidth", 6)
+            .attr("markerHeight", 6)
+            .attr("orient", "auto")
+            .append("path")
+            .attr("d", "M0,-5L10,0L0,5")
+            .attr("fill", "#999");
+
+        let graph;
+
+        // Initial graph
+        updateGraph();
+
+        function updateGraph() {
+            // Remove existing graph if any
+            svg.selectAll("*").remove();
+
+            // Re-add arrow marker
+            svg.append("defs").append("marker")
+                .attr("id", "arrow")
+                .attr("viewBox", "0 -5 10 10")
+                .attr("refX", 5)  // Adjusted for middle placement
+                .attr("refY", 0)
+                .attr("markerWidth", 6)
+                .attr("markerHeight", 6)
+                .attr("orient", "auto")
+                .append("path")
+                .attr("d", "M0,-5L10,0L0,5")
+                .attr("fill", "#999");
+
+            // Parse new graph data
+            const input = document.getElementById("graphData").value;
+            graph = JSON.parse(input);
+
+            // Define the links (relationships)
+            const link = svg.append("g")
+                .attr("class", "links")
+                .selectAll("line")
+                .data(graph.links)
+                .enter().append("line")
+                .attr("class", d => d.total ? "link total" : "link") // Bold line for total participation
+                .attr("marker-end", d => d.arrow && d.direction === "target" ? "url(#arrow)" : null) // Add arrow markers towards target
+                .attr("marker-start", d => d.arrow && d.direction === "source" ? "url(#arrow)" : null); // Add arrow markers towards source
+
+            // Add middle arrows (between source and target)
+            const arrowLink = svg.append("g")
+                .attr("class", "arrows")
+                .selectAll("path")
+                .data(graph.links.filter(d => d.arrow))
+                .enter().append("path")
+                .attr("d", d => {
+                    const midX = (d.source.x + d.target.x) / 2;
+                    const midY = (d.source.y + d.target.y) / 2;
+                    const direction = d.direction === "target" ? [10, 0] : [-10, 0];
+                    return `M${midX},${midY}L${midX + direction[0]},${midY + direction[1]}`;
+                })
+                .attr("fill", "#999");
+
+            // Define the nodes (entities, attributes, relationships)
+            const node = svg.append("g")
+                .attr("class", "nodes")
+                .selectAll("g")
+                .data(graph.nodes)
+                .enter().append("g")
+                .call(d3.drag()
+                    .on("start", dragstarted)
+                    .on("drag", dragged)
+                    .on("end", dragended));
+
+            // Create the shapes for each node based on their type
+            node.append("path")
+                .attr("d", d => {
+                    if (d.type === "entity") {
+                        return d.isWeak ? "M -40 -20 H 40 V 20 H -40 Z" : "M -40 -20 H 40 V 20 H -40 Z"; // Rectangle for entity
+                    } else if (d.type === "attribute") {
+                        return "M 0 -20 A 20 20 0 1 1 0 20 A 20 20 0 1 1 0 -20"; // Oval for attribute
+                    } else {
+                        return "M -20 0 L 0 -20 L 20 0 L 0 20 Z"; // Diamond for relationship
+                    }
+                })
+                .attr("class", d => d.isWeak ? "weak-entity" : d.type); // Bold line for weak entities
+
+            // Add text labels to each node
+            node.append("text")
+                .attr("dy", 5)
+                .attr("class", d => d.isKey ? "key" : "")
+                .text(d => d.id);
+
+            // Setup the force simulation for nodes and links
+            const simulation = d3.forceSimulation()
+                .nodes(graph.nodes)
+                .force("link", d3.forceLink(graph.links)
+                    .id(d => d.id)
+                    .distance(d => d.source.type === "attribute" || d.target.type === "attribute" ? 50 : 150)
+                    .strength(d => d.source.type === "attribute" || d.target.type === "attribute" ? 1 : 0.5))
+                .force("charge", d3.forceManyBody().strength(-300))
+                .force("center", d3.forceCenter(width / 2, height / 2));
+
+            simulation.on("tick", () => {
+                link
+                    .attr("x1", d => d.source.x)
+                    .attr("y1", d => d.source.y)
+                    .attr("x2", d => d.target.x)
+                    .attr("y2", d => d.target.y);
+
+                node.attr("transform", d => `translate(${d.x},${d.y})`);
+            });
+        }
+
+        // Drag event handlers
+        function dragstarted(event, d) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+
+        function dragged(event, d) {
+            d.fx = event.x;
+            d.fy = event.y;
+        }
+
+        function dragended(event, d) {
+            if (!event.active) simulation.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+        }
+    </script>
+</body>
+</html>
