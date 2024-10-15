@@ -104,6 +104,7 @@
             .attr("fill", "#999");
 
         let graph;
+        let simulation; // Define simulation globally
 
         // Initial graph
         updateGraph();
@@ -116,7 +117,7 @@
             svg.append("defs").append("marker")
                 .attr("id", "arrow")
                 .attr("viewBox", "0 -5 10 10")
-                .attr("refX", 15)  
+                .attr("refX", 15)
                 .attr("refY", 0)
                 .attr("markerWidth", 6)
                 .attr("markerHeight", 6)
@@ -139,20 +140,6 @@
                 .attr("marker-end", d => d.arrow && d.direction === "target" ? "url(#arrow)" : null) // Add arrow markers towards target
                 .attr("marker-start", d => d.arrow && d.direction === "source" ? "url(#arrow)" : null); // Add arrow markers towards source
 
-            // Add middle arrows (between source and target)
-            /*const arrowLink = svg.append("g")
-                .attr("class", "arrows")
-                .selectAll("path")
-                .data(graph.links.filter(d => d.arrow))
-                .enter().append("path")
-                .attr("d", d => {
-                    const midX = (d.source.x + d.target.x) / 2;
-                    const midY = (d.source.y + d.target.y) / 2;
-                    const direction = d.direction === "target" ? [10, 0] : [-10, 0];
-                    return `M${midX},${midY}L${midX + direction[0]},${midY + direction[1]}`;
-                })
-                .attr("fill", "#999");
-*/
             // Define the nodes (entities, attributes, relationships)
             const node = svg.append("g")
                 .attr("class", "nodes")
@@ -184,7 +171,7 @@
                 .text(d => d.id);
 
             // Setup the force simulation for nodes and links
-            const simulation = d3.forceSimulation()
+            simulation = d3.forceSimulation()  // Initialize simulation here
                 .nodes(graph.nodes)
                 .force("link", d3.forceLink(graph.links)
                     .id(d => d.id)
@@ -202,24 +189,24 @@
 
                 node.attr("transform", d => `translate(${d.x},${d.y})`);
             });
-        }
 
-        // Drag event handlers
-        function dragstarted(event, d) {
-            if (!event.active) simulation.alphaTarget(0.3).restart();
-            d.fx = d.x;
-            d.fy = d.y;
-        }
+            // Drag event handlers
+            function dragstarted(event, d) {
+                if (!event.active) simulation.alphaTarget(0.3).restart();
+                d.fx = d.x;
+                d.fy = d.y;
+            }
 
-        function dragged(event, d) {
-            d.fx = event.x;
-            d.fy = event.y;
-        }
+            function dragged(event, d) {
+                d.fx = event.x;
+                d.fy = event.y;
+            }
 
-        function dragended(event, d) {
-            if (!event.active) simulation.alphaTarget(0);
-            d.fx = null;
-            d.fy = null;
+            function dragended(event, d) {
+                if (!event.active) simulation.alphaTarget(0);
+                d.fx = null;
+                d.fy = null;
+            }
         }
     </script>
 </body>
