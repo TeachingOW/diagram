@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Logic Gates with Dynamic Connections</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    .gates-container {
+      position: relative;
+      width: 100%;
+      height: 400px;
+      border: 1px solid #ccc;
+    }
+    .shape-item {
+      position: absolute;
+      cursor: move;
+    }
+    .input-output-container {
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 20px;
+    }
+    .toggle {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 40px;
+      height: 20px;
+    }
+    .switch input {
+      display: none;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: 0.4s;
+      border-radius: 34px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 12px;
+      width: 12px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: 0.4s;
+      border-radius: 50%;
+    }
+    input:checked + .slider {
+      background-color: #4CAF50;
+    }
+    input:checked + .slider:before {
+      transform: translateX(18px);
+    }
+    .output-label {
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    .connection {
+      fill: none;
+      stroke: black;
+      stroke-width: 2;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Logic Gates with Dynamic Connections</h1>
+
+  <!-- Input and Output Toggles -->
+  <div class="input-output-container">
+  </div>
+
+  <!-- Container for static gates with relative positioning -->
+  <div class="gates-container" id="gates-container">
+    <div class="toggle">
+        <label for="A-toggle">A</label>
+        <label class="switch">
+          <input type="checkbox" id="A-toggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="toggle">
+        <label for="B-toggle">B</label>
+        <label class="switch">
+          <input type="checkbox" id="B-toggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="toggle">
+        <label for="C-toggle">C</label>
+        <label class="switch">
+          <input type="checkbox" id="C-toggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="toggle">
+        <span class="output-label">Final Output: <span id="final-output">0</span></span>
+      </div>
+    
+    <!-- AND Gate -->
+    <div class="shape-item and-gate" id="AND-gate" style="top: 100px; left: 250px;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="100" height="50">
+        <title>AND Gate</title>
+        <circle id="input1" cx="5" cy="15" r="2" fill="red"/>
+        <path fill="none" stroke="#000" stroke-width="2" d="M31 15H5"/>
+        <circle id="input2" cx="5" cy="35" r="2" fill="red"/>
+        <path fill="none" stroke="#000" stroke-width="2" d="M32 35H5"/>
+        <circle id="output" cx="95" cy="25" r="2" fill="green"/>
+        <path fill="none" stroke="#000" stroke-width="2" d="M70 25h25"/>
+        <path d="M30 5V45H50.47619c11.267908 0 20-9.000045 20-20s-8.732091-20-20-20H30zm2.857143 2.857143H50.47619c9.760663 0 16.666667 7.639955 16.666667 17.142857 0 9.502902-7.382195 17.142857-17.142857 17.142857H32.857143V7.857143z"/>
+      </svg>
+    </div>
+
+    <!-- OR Gate -->
+    <div class="shape-item or-gate" id="OR-gate" style="top: 20px; left: 50px;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="100" height="50">
+        <title>OR Gate</title>
+        <circle id="input1" cx="5" cy="15" r="2" fill="red"/>
+        <path fill="none" stroke="#000" stroke-width="2" d="M30 15H5"/>
+        <circle id="input2" cx="5" cy="35" r="2" fill="red"/>
+        <path fill="none" stroke="#000" stroke-width="2" d="M30 35H5"/>
+        <circle id="output" cx="95" cy="25" r="2" fill="green"/>
+        <path fill="none" stroke="#000" stroke-width="2" d="M70 25h25"/>
+        <path fill-rule="evenodd" d="M24.09375 5l2 2.4375S31.75 14.437549 31.75 25s-5.65625 17.5625-5.65625 17.5625l-2 2.4375H41.25c2.408076.000001 7.689699.024514 13.625-2.40625s12.536536-7.343266 17.6875-16.875L71.25 25l1.3125-.71875C62.259387 5.21559 46.006574 5 41.25 5H24.09375zm5.875 3H41.25c4.684173 0 18.28685-.130207 27.96875 17C64.451964 33.429075 58.697469 37.68391 53.5 39.8125 48.139339 42.007924 43.658075 42.000001 41.25 42H30c1.873588-3.108434 4.75-9.04935 4.75-17 0-7.973354-2.908531-13.900185-4.78125-17z"></path>
+      </svg>
+    </div>
+
+    <!-- Connections (SVG paths) -->
+    <svg class="connections-layer" width="100%" height="100%" style="position:absolute; top:0; left:0;">
+      <!-- Connection paths will be updated dynamically -->
+      <path id="A-to-OR" class="connection" />
+      <path id="B-to-OR" class="connection" />
+      <path id="or-to-and" class="connection" />
+      <path id="C-to-and" class="connection" />
+    </svg>
+  </div>
+
+  <script>
+    const dragHandler = d3.drag()
+      .on("start", dragStarted)
+      .on("drag", dragged)
+      .on("end", dragEnded);
+
+    // Enable dragging for gates and inputs
+    d3.selectAll(".shape-item").call(dragHandler);
+
+    function dragStarted(event) {
+      d3.select(this).raise().classed("active", true);
+    }
+
+    function dragged(event) {
+      const currentElement = d3.select(this);
+      currentElement.style("left", (event.x) + "px")
+                  .style("top", (event.y) + "px");
+
+      // Update connections
+      updateConnections();
+    }
+
+    function dragEnded(event) {
+      d3.select(this).classed("active", false);
+    }
+
+    document.getElementById('A-toggle').addEventListener('change', updateOutput);
+    document.getElementById('B-toggle').addEventListener('change', updateOutput);
+    document.getElementById('C-toggle').addEventListener('change', updateOutput);
+
+    function updateOutput() {
+      const A = document.getElementById('A-toggle').checked;
+      const B = document.getElementById('B-toggle').checked;
+      const C = document.getElementById('C-toggle').checked;
+
+      const orOutput = A || B;
+      const andOutput = orOutput && C;
+
+      document.getElementById('final-output').textContent = andOutput ? 1 : 0;
+
+      // Update connections
+      updateConnections();
+    }
+    function updateConnections() {
+  // Using a timeout to ensure elements have rendered
+  setTimeout(() => {
+    const orGate = d3.select("#OR-gate");
+    const andGate = d3.select("#AND-gate");
+
+    const AInput = document.getElementById("A-toggle").getBoundingClientRect();
+    const BInput = document.getElementById("B-toggle").getBoundingClientRect();
+    const CInput = document.getElementById("C-toggle").getBoundingClientRect();
+    const ORGateRect = orGate.node().getBoundingClientRect();
+    const ANDGateRect = andGate.node().getBoundingClientRect();
+
+    // Check if all bounding rectangles are valid
+    if (AInput.width > 0 && BInput.width > 0 && CInput.width > 0 &&
+        ORGateRect.width > 0 && ANDGateRect.width > 0) {
+
+      // Update connection paths
+      d3.select("#A-to-OR")
+        .attr("d", `M${AInput.right},${AInput.top + AInput.height / 2} L${ORGateRect.left},${ORGateRect.top + 15}`);
+      d3.select("#B-to-OR")
+        .attr("d", `M${BInput.right},${BInput.top + BInput.height / 2} L${ORGateRect.left},${ORGateRect.top + 35}`);
+      d3.select("#C-to-AND")
+        .attr("d", `M${CInput.right},${CInput.top + CInput.height / 2} L${ANDGateRect.left},${ANDGateRect.top + 35}`);
+      d3.select("#OR-to-AND")
+        .attr("d", `M${ORGateRect.right},${ORGateRect.top + 25} L${ANDGateRect.left},${ANDGateRect.top + 15}`);
+    }
+  }, 100); // Delay to ensure elements are rendered
+}
+
+
+
+    // Initial call to position connections correctly
+    updateConnections();
+  </script>
+</body>
+</html>
