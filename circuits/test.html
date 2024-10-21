@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Static Logic Gates with Relative Positions</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    .gates-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      border: 1px solid #ccc; /* Optional: visual boundary for the container */
+    }
+    .shape-item {
+      position: absolute; /* Use absolute positioning for draggable items */
+      cursor: move; /* Change cursor to indicate draggable items */
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Logic Gates with Relative Positions</h1>
+
+  <!-- Container for static gates with relative positioning -->
+  <div class="gates-container">
+    <!-- AND Gate -->
+    <div class="shape-item and-gate" id="AND-gate">
+      <svg xmlns="http://www.w3.org/2000/svg" width="100" height="50">
+        <title>AND Gate</title>
+        <!-- Input 1 Node -->
+        <circle id="input1" cx="5" cy="15" r="2" fill="red"/>
+        <path fill="none" stroke="#000" stroke-width="2" d="M31 15H5"/>
+        <!-- Input 2 Node -->
+        <circle id="input2" cx="5" cy="35" r="2" fill="red"/>
+        <path fill="none" stroke="#000" stroke-width="2" d="M32 35H5"/>
+        <!-- Output Node -->
+        <circle id="output" cx="95" cy="25" r="2" fill="green"/>
+        <path fill="none" stroke="#000" stroke-width="2" d="M70 25h25"/>
+        <!-- AND gate body -->
+        <path d="M30 5V45H50.47619c11.267908 0 20-9.000045 20-20s-8.732091-20-20-20H30zm2.857143 2.857143H50.47619c9.760663 0 16.666667 7.639955 16.666667 17.142857 0 9.502902-7.382195 17.142857-17.142857 17.142857H32.857143V7.857143z"/>
+      </svg>
+    </div>
+
+    <!-- OR Gate -->
+    <div class="shape-item or-gate" id="OR-gate">
+      <svg xmlns="http://www.w3.org/2000/svg" width="100" height="50">
+        <title>OR Gate</title>
+        <!-- Input 1 Node -->
+        <circle id="input1" cx="5" cy="15" r="2" fill="red"/>
+        <path fill="none" stroke="#000" stroke-width="2" d="M30 15H5"/>
+        <!-- Input 2 Node -->
+        <circle id="input2" cx="5" cy="35" r="2" fill="red"/>
+        <path fill="none" stroke="#000" stroke-width="2" d="M30 35H5"/>
+        <!-- Output Node -->
+        <circle id="output" cx="95" cy="25" r="2" fill="green"/>
+        <path fill="none" stroke="#000" stroke-width="2" d="M70 25h25"/>
+        <!-- OR gate body -->
+        <path fill-rule="evenodd" d="M24.09375 5l2 2.4375S31.75 14.437549 31.75 25s-5.65625 17.5625-5.65625 17.5625l-2 2.4375H41.25c2.408076.000001 7.689699.024514 13.625-2.40625s12.536536-7.343266 17.6875-16.875L71.25 25l1.3125-.71875C62.259387 5.21559 46.006574 5 41.25 5H24.09375zm5.875 3H41.25c4.684173 0 18.28685-.130207 27.96875 17C64.451964 33.429075 58.697469 37.68391 53.5 39.8125 48.139339 42.007924 43.658075 42.000001 41.25 42H30c1.873588-3.108434 4.75-9.04935 4.75-17 0-7.973354-2.908531-13.900185-4.78125-17z"></path>
+      </svg>
+    </div>
+  </div>
+
+  <script>
+    const dragHandler = d3.drag()
+      .on("start", dragStarted)
+      .on("drag", dragged)
+      .on("end", dragEnded);
+
+    d3.selectAll(".shape-item")
+      .call(dragHandler);
+
+    function dragStarted(event) {
+      d3.select(this).raise().classed("active", true);
+    }
+
+    function dragged(event) {
+      d3.select(this)
+        .style("left", (event.x) + "px")
+        .style("top", (event.y) + "px");
+    }
+
+    function dragEnded(event) {
+      d3.select(this).classed("active", false);
+    }
+  </script>
+</body>
+</html>
