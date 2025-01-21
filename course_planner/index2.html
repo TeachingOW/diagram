@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Planner</title>
+
+</head>
+<link rel="stylesheet" href="styles.css">
+<body>
+    <h1>Course Planner</h1>
+
+    <div id="semesters">
+        <!-- Semesters will be generated here dynamically -->
+    </div>
+    <button onclick="addSemester()">Add Semester</button>
+    <button onclick="removeSemester()">Remove Semester</button>
+
+    <h2>Missing Courses</h2>
+    <div id="missing-courses">
+        <!-- Missing courses will be displayed here -->
+    </div>
+
+    <script src="data/courses.js"></script>
+    <script src="data/student.js"></script>
+    <script src="script.js"></script>
+    <script>
+
+window.onload = function() {
+    // Fetch current student courses from the server when the page loads
+    fetchStudentCourses();
+
+    // Other initialization code like generating semesters can go here
+    generateSemesters();
+    displayMissingCourses();
+};
+
+function fetchStudentCourses() {
+    fetch('/get-student-courses')
+        .then(response => response.json())
+        .then(data => {
+            studentCourses = data.studentCourses; // Update the studentCourses array
+            displayMissingCourses(); // Call the function to display missing courses based on the fetched data
+        })
+        .catch(error => {
+            console.error('Error fetching student courses:', error);
+        });
+}
+
+                // Prerequisite checking function (simplified for now)
+        function check(courseId, semesterIndex) {
+            // Add prerequisite logic here if needed
+            return true;
+        }
+
+        
+    </script>
+</body>
+</html>
